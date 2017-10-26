@@ -56,7 +56,7 @@
         <logback.version>1.1.2</logback.version>
         <mallet.version>2.0.8</mallet.version>
         <jax.doclets.version>0.10.1</jax.doclets.version>
-        <mongo.version>3.5.0</mongo.version>        
+        <mongo.version>3.5.0</mongo.version>
         <pentaho.kettle.version>5.1.preview.506</pentaho.kettle.version>
     </properties>
     <modules>
@@ -67,6 +67,8 @@
         <module>marmotta-utils</module>
         <module>marmotta-search</module>    
         <module>publications-manager</module>
+        <module>ldcache-backend-file-mod</module>
+        <module>marmotta-ldcache-file-mod</module>
         <module>storage</module>
         <module>webapp</module>
     </modules>
