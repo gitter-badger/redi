@@ -7,7 +7,9 @@ package org.apache.marmotta.ucuenca.wk.pubman.services;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import org.apache.marmotta.platform.sparql.api.sparql.SparqlService;
@@ -35,9 +37,6 @@ public class DisambiguationServiceImpl implements DisambiguationService {
 
     @Override
     public void Proccess() {
-
-        
-        
         Provider a0 = null;
         Provider a1 = null;
         Provider a2 = null;
@@ -46,44 +45,47 @@ public class DisambiguationServiceImpl implements DisambiguationService {
         Providers.add(a1);
         Providers.add(a2);
 
-        Disambiguate(Providers, 0, Lists.newArrayList(""));
+        Init(Providers);
     }
 
-    public void Disambiguate(List<Provider> list, int level, List<String> used) {
-        Provider prOrg = list.get(0);
-        List<Person> lsOrg = prOrg.getAuthors();
-        prOrg.FillData(lsOrg);
-        for (int i = 0; i < lsOrg.size(); i++) {
-            Provider prX = list.get(i);
-            Person PersonAG = lsOrg.get(i);
-            List<Person> candidates = prX.getCandidates(PersonAG.URI);
-            prX.FillData(candidates);
-            for (int j = 0; j < candidates.size(); j++) {
-                //blocking Name
-                Person PersonPrX = candidates.get(j);
-                if (PersonAG.checkName(PersonPrX)) {
-                    if (PersonAG.checkAffiliations(PersonPrX)
-                            || PersonAG.checkPublications(PersonPrX)
-                            || PersonAG.checkCoauthors(PersonPrX)
-                            || PersonAG.checkKeywords(PersonPrX)) {
-                        PersonAG.enrich(PersonPrX);
-                        MergeAuthor(prX.Graph, PersonPrX.URI, PersonAG.URI);
-                    }
-
+    public void Init(List<Provider> list) {
+        Provider AuthorsProvider = list.get(0);
+        List<Person> lsAuthors = AuthorsProvider.getAuthors();
+        AuthorsProvider.FillData(lsAuthors);
+        for (int i = 0; i < lsAuthors.size(); i++) {
+            Person PersonAG = lsAuthors.get(i);
+            List<List<Person>> Candidates = new ArrayList<>();
+            Candidates.add(Lists.newArrayList(PersonAG));
+            for (int j = 1; j < list.size(); j++) {
+                Provider aProvider = list.get(j);
+                List<Person> candidates = aProvider.getCandidates(PersonAG.URI);
+                if (!candidates.isEmpty()) {
+                    Candidates.add(candidates);
                 }
             }
+            Disambiguate(Candidates, 0, new Person());
         }
     }
 
-    public void MergeAuthor(String Graph, String URIP, String URIO) {
-
+    public void Disambiguate(List<List<Person>> Candidates, int level, Person P) {
+        if (level >= Candidates.size()) {
+            return;
+        }
+        List<Person> get = Candidates.get(level);
+        for (Person p : get) {
+            if (P.check(p)) {
+                Person enrich = P.enrich(p);
+                Disambiguate(Candidates, level + 1, enrich);
+                registerSameAs(P.URI, p.URI);
+            } else {
+                Disambiguate(Candidates, level + 1, P);
+            }
+        }
     }
-
-    public void MergePublication(String Graph, String URI) {
-
-    }
-
-    public void MergeJournal(String Graph, String URI) {
-
+    
+    
+    public void registerSameAs(String URIO, String URIP){
+        
+    
     }
 }
