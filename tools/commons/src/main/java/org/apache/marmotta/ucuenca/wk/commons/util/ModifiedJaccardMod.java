@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javolution.util.internal.map.MapEntryImpl;
 import static org.simmetrics.StringMetricBuilder.with;
 import org.simmetrics.metrics.JaroWinkler;
 import org.simmetrics.simplifiers.Simplifiers;
@@ -35,8 +34,8 @@ public class ModifiedJaccardMod {
         onlyCompleteMatchs = false;
         Map.Entry<Integer, Double> c1 = countMatchs(tks1, tks2);
         double mx = Math.min(tks1.size(), tks2.size());
-        double me = (c.getValue() + c1.getValue()) / (c.getKey() + c1.getKey() + mx);
-        return me;
+
+        return (c.getValue() + c1.getValue()) / (c.getKey() + c1.getKey() + mx);
     }
 
     private Map.Entry<Integer, Double> countMatchs(List<String> tokens1, List<String> tokens2) {

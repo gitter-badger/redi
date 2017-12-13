@@ -7,11 +7,12 @@ package org.apache.marmotta.ucuenca.wk.pubman.services;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import org.apache.marmotta.platform.core.exception.MarmottaException;
 import org.apache.marmotta.platform.sparql.api.sparql.SparqlService;
 import org.apache.marmotta.ucuenca.wk.commons.service.ConstantService;
 import org.apache.marmotta.ucuenca.wk.commons.service.QueriesService;
@@ -37,18 +38,24 @@ public class DisambiguationServiceImpl implements DisambiguationService {
 
     @Override
     public void Proccess() {
-        Provider a0 = null;
-        Provider a1 = null;
-        Provider a2 = null;
+        Provider a0 = new Provider("Authors", constantService.getAuthorsGraph(), sparqlService);
+        Provider a1 = new Provider("Scopus", constantService.getScopusGraph(), sparqlService);
+        Provider a2 = new Provider("MSAK", constantService.getAcademicsKnowledgeGraph(), sparqlService);
+        Provider a3 = new Provider("DBLP", constantService.getDBLPGraph(), sparqlService);
         List<Provider> Providers = new ArrayList();
         Providers.add(a0);
         Providers.add(a1);
         Providers.add(a2);
-
-        Init(Providers);
+        Providers.add(a3);
+        
+        try {
+            Init(Providers);
+        } catch (MarmottaException ex) {
+            Logger.getLogger(DisambiguationServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    public void Init(List<Provider> list) {
+    public void Init(List<Provider> list) throws MarmottaException {
         Provider AuthorsProvider = list.get(0);
         List<Person> lsAuthors = AuthorsProvider.getAuthors();
         AuthorsProvider.FillData(lsAuthors);
@@ -59,6 +66,7 @@ public class DisambiguationServiceImpl implements DisambiguationService {
             for (int j = 1; j < list.size(); j++) {
                 Provider aProvider = list.get(j);
                 List<Person> candidates = aProvider.getCandidates(PersonAG.URI);
+                aProvider.FillData(candidates);
                 if (!candidates.isEmpty()) {
                     Candidates.add(candidates);
                 }

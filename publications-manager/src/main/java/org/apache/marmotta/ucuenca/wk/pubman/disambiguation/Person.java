@@ -7,8 +7,8 @@ package org.apache.marmotta.ucuenca.wk.pubman.disambiguation;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.marmotta.ucuenca.wk.commons.util.ModifiedJaccardMod;
 import org.apache.marmotta.ucuenca.wk.pubman.disambiguation.utils.NameUtils;
+import org.apache.marmotta.ucuenca.wk.pubman.disambiguation.utils.PublicationUtils;
 
 /**
  *
@@ -17,6 +17,10 @@ import org.apache.marmotta.ucuenca.wk.pubman.disambiguation.utils.NameUtils;
 public class Person {
 
     private final double thresholdName = 0.9;
+    private final double thresholdCAName = 0.9;
+    private final double thresholdTitle = 0.9;
+    private final int thresholdCoauthors = 2;
+    private final int thresholdPublications = 1;
 
     public Provider Origin;
     public String URI;
@@ -40,57 +44,7 @@ public class Person {
         }
         List<String> name1 = NameUtils.bestName(Name);
         List<String> name2 = NameUtils.bestName(p.Name);
-        double sim = -1;
-        int tipo = 0;
-        String nf1 = "";
-        String nf2 = "";
-        String nl1 = "";
-        String nl2 = "";
-        String nc1 = "";
-        String nc2 = "";
-        if (name1.size() == 1) {
-            if (name2.size() == 1) {
-                tipo = 1;
-                nc1 = name1.get(0);
-                nc2 = name2.get(0);
-            } else {
-                tipo = 2;
-                nc2 = name1.get(0);
-                nf1 = name2.get(0);
-                nl1 = name2.get(1);
-            }
-        } else {
-            if (name2.size() == 1) {
-                tipo = 2;
-                nc2 = name2.get(0);
-                nf1 = name1.get(0);
-                nl1 = name1.get(1);
-            } else {
-                tipo = 3;
-                nf1 = name1.get(0);
-                nl1 = name1.get(1);
-                nf2 = name2.get(0);
-                nl2 = name2.get(1);
-            }
-        }
-        ModifiedJaccardMod metric = new ModifiedJaccardMod();
-        switch (tipo) {
-            case 1:
-                metric.prioritizeWordOrder = false;
-                sim = metric.distanceName(nc1, nc2);
-                break;
-            case 2:
-                metric.prioritizeWordOrder = false;
-                sim = metric.distanceName(nf1 + " " + nl1, nc2);
-                break;
-            case 3:
-                metric.prioritizeWordOrder = true;
-                double sim1 = metric.distanceName(nl1, nl2);
-                metric.prioritizeWordOrder = false;
-                double sim2 = metric.distanceName(nf1, nf2);
-                sim = (sim1 + sim2) / 2;
-                break;
-        }
+        double sim = NameUtils.compareName(name1, name2);
         return sim >= thresholdName;
     }
 
@@ -98,20 +52,49 @@ public class Person {
         if (Coauthors.isEmpty() || p.Coauthors.isEmpty()) {
             return null;
         }
-
-        return true;
+        List<List<String>> name1 = NameUtils.uniqueName(Coauthors);
+        List<List<String>> name2 = NameUtils.uniqueName(p.Coauthors);
+        List<List<String>> uname1 = new ArrayList<>();
+        List<List<String>> uname2 = new ArrayList<>();
+        int co = 0;
+        for (List<String> n1 : name1) {
+            for (List<String> n2 : name2) {
+                if (!uname1.contains(n1) && !uname2.contains(n2)) {
+                    if (NameUtils.compareName(n1, n2) >= thresholdCAName) {
+                        co++;
+                        uname1.add(n1);
+                        uname2.add(n2);
+                    }
+                }
+            }
+        }
+        return co >= thresholdCoauthors;
     }
 
     public Boolean checkPublications(Person p) {
         if (Publications.isEmpty() || p.Publications.isEmpty()) {
             return null;
         }
-
-        return true;
+        List<String> name1 = PublicationUtils.uniqueTitle(Publications);
+        List<String> name2 = PublicationUtils.uniqueTitle(p.Publications);
+        List<String> uname1 = new ArrayList<>();
+        List<String> uname2 = new ArrayList<>();
+        int co = 0;
+        for (String n1 : name1) {
+            for (String n2 : name2) {
+                if (!uname1.contains(n1) && !uname2.contains(n2)) {
+                    if (PublicationUtils.compareTitle(n1, n2) >= thresholdTitle) {
+                        co++;
+                        uname1.add(n1);
+                        uname2.add(n2);
+                    }
+                }
+            }
+        }
+        return co >= thresholdPublications;
     }
 
     public Boolean checkAffiliations(Person p) {
-
         if (Affiliations.isEmpty() || p.Affiliations.isEmpty()) {
             return null;
         }
