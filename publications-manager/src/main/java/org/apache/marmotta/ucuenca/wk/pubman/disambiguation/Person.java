@@ -7,6 +7,7 @@ package org.apache.marmotta.ucuenca.wk.pubman.disambiguation;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.marmotta.ucuenca.wk.pubman.disambiguation.utils.AffiliationUtils;
 import org.apache.marmotta.ucuenca.wk.pubman.disambiguation.utils.NameUtils;
 import org.apache.marmotta.ucuenca.wk.pubman.disambiguation.utils.PublicationUtils;
 
@@ -19,8 +20,10 @@ public class Person {
     private final double thresholdName = 0.9;
     private final double thresholdCAName = 0.9;
     private final double thresholdTitle = 0.9;
+    private final double thresholdAff = 0.9;
     private final int thresholdCoauthors = 2;
     private final int thresholdPublications = 1;
+    private final int thresholdAffiliation = 1;
 
     public Provider Origin;
     public String URI;
@@ -35,7 +38,35 @@ public class Person {
             return true;
         }
 
-        return true;
+        Boolean checkName = checkName(p);
+        if (checkName == true) {
+            Boolean checkAffiliations = checkAffiliations(p);
+            Boolean checkCoauthors = checkCoauthors(p);
+            Boolean checkPublications = checkPublications(p);
+            Boolean checkTopics = checkTopics(p);
+
+            if (checkCoauthors == null && checkPublications == null && checkTopics == null
+                    && checkAffiliations == true) {
+                return true;
+            }
+            
+            int c=0;
+            if (checkAffiliations==true){
+                c++;
+            }
+            if (checkPublications==true){
+                c++;
+            }
+            if (checkCoauthors==true){
+                c++;
+            }
+            if (checkTopics==true){
+                c++;
+            }
+            return c>=2;
+
+        }
+        return false;
     }
 
     public Boolean checkName(Person p) {
@@ -98,8 +129,23 @@ public class Person {
         if (Affiliations.isEmpty() || p.Affiliations.isEmpty()) {
             return null;
         }
-
-        return true;
+        List<String> name1 = AffiliationUtils.uniqueTitle(Affiliations);
+        List<String> name2 = AffiliationUtils.uniqueTitle(p.Affiliations);
+        List<String> uname1 = new ArrayList<>();
+        List<String> uname2 = new ArrayList<>();
+        int co = 0;
+        for (String n1 : name1) {
+            for (String n2 : name2) {
+                if (!uname1.contains(n1) && !uname2.contains(n2)) {
+                    if (AffiliationUtils.compareTitle(n1, n2) >= thresholdAff) {
+                        co++;
+                        uname1.add(n1);
+                        uname2.add(n2);
+                    }
+                }
+            }
+        }
+        return co >= thresholdAffiliation;
     }
 
     public Boolean checkTopics(Person p) {
@@ -107,7 +153,7 @@ public class Person {
             return null;
         }
 
-        return true;
+        return null;
     }
 
     public Person enrich(Person p) {

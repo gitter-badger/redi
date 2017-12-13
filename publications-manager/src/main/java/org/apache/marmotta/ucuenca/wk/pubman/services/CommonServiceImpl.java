@@ -73,6 +73,9 @@ public class CommonServiceImpl implements CommonService {
     LantindexDetectionServiceImpl LatindexImpl;
 
     @Inject
+    DisambiguationServiceImpl DisambiguationImpl;
+
+    @Inject
     IndexCentralGraphImpl indexingCentralGraphService;
 
     @Inject
@@ -181,7 +184,6 @@ public class CommonServiceImpl implements CommonService {
 //
 //        return dblpProviderServiceInt.SearchAuthorTaskImpl(uri);
 //    }
-
     @Override
     public String createReport(String hostname, String realPath, String name, String type, List<String> params) {
         return reportService.createReport(hostname, realPath, name, type, params);
@@ -207,9 +209,10 @@ public class CommonServiceImpl implements CommonService {
 
     @Override
     public String DetectLatindexPublications() {
-        String startProcess = LatindexImpl.startProcess();
+        //String startProcess = LatindexImpl.startProcess();
+        DisambiguationImpl.Proccess();
 
-        return startProcess;
+        return "";
     }
 
     @Override
