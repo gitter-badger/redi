@@ -92,6 +92,7 @@ public class Provider {
                 + "    }\n"
                 + "}";
         String qryP = "prefix dct: <http://purl.org/dc/terms/>\n"
+                + "prefix foaf: <http://xmlns.com/foaf/0.1/>\n"
                 + "select distinct ?p {\n"
                 + "     graph <" + Graph + ">{\n"
                 + "            <URI>      foaf:publications  ?publication .\n"
