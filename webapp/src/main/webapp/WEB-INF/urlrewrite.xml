@@ -2,7 +2,7 @@
  <rule>
         <name>Domain Name Check</name>
         <condition name="host" operator="notequal" next="or" >rediclon.cedia.edu.ec</condition>
-        <condition type="scheme" operator="equal">http</condition>
+        <condition type="scheme" operator="notequal">https</condition>
         <from>^(.*)$</from>
         <to type="permanent-redirect">https://rediclon.cedia.edu.ec$1</to>
     </rule>
