@@ -134,7 +134,7 @@ public class DisambiguationServiceImpl implements DisambiguationService {
         for (Map<String, Value> v : query) {
             String stringValue = v.get("p").stringValue();
             MapPerson(list, stringValue);
-        
+
         }
     }
 
@@ -144,7 +144,7 @@ public class DisambiguationServiceImpl implements DisambiguationService {
         for (Provider pro : list) {
             gp += " <" + pro.Graph + "> ";
         }
-        String qry = "construct { <"+p+"> ?p ?v . "
+        String qry = "construct { <" + p + "> ?p ?v . "
                 + "     ?v ?w ?r. } where {\n"
                 + "  	graph <" + CGP + ">{\n"
                 + "		<" + p + "> <http://www.w3.org/2002/07/owl#sameAs> ?c .\n"
@@ -205,8 +205,10 @@ public class DisambiguationServiceImpl implements DisambiguationService {
 
     public void registerSameAs(String graph, String URIO, String URIP) throws InvalidArgumentException, MarmottaException, MalformedQueryException, UpdateExecutionException {
 
-        String buildInsertQuery = buildInsertQuery(graph, URIO, "http://www.w3.org/2002/07/owl#sameAs", URIP);
-        sparqlService.update(QueryLanguage.SPARQL, buildInsertQuery);
+        if (URIO != null && URIP != null) {
+            String buildInsertQuery = buildInsertQuery(graph, URIO, "http://www.w3.org/2002/07/owl#sameAs", URIP);
+            sparqlService.update(QueryLanguage.SPARQL, buildInsertQuery);
+        }
     }
 
     private String buildInsertQuery(String grapfhProv, String sujeto, String predicado, String objeto) {
