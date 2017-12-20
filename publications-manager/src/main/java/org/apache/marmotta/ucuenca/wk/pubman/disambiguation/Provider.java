@@ -32,10 +32,11 @@ public class Provider {
     }
 
     public List<Person> getAuthors() throws MarmottaException {
-        String qry = "select distinct ?a \n"
+        String qry = "select ?a \n"
                 + "{\n"
                 + "	graph <" + Graph + "> {\n"
-                + "  		?a a <http://xmlns.com/foaf/0.1/Person>\n"
+                + "  		?a a <http://xmlns.com/foaf/0.1/Person> . \n"
+                + "  		?a <http://purl.org/dc/terms/provenance> <http://redi.cedia.edu.ec/resource/endpoint/file/UCUENCA> . \n"
                 + "	}\n"
                 + "}";
         List<Map<String, Value>> persons = sparql.query(QueryLanguage.SPARQL, qry);
@@ -52,7 +53,8 @@ public class Provider {
     public List<Person> getCandidates(String URI) throws MarmottaException {
         String qry = "select distinct ?a {\n"
                 + "	graph <" + Graph + "> {\n"
-                + "  		?q <http://www.w3.org/2002/07/owl#oneOf> <" + URI + "> .\n"
+                + "             values ?per { <" + URI + "> } . \n"
+                + "  		?q <http://www.w3.org/2002/07/owl#oneOf> ?per .\n"
                 + "      	?a <http://www.w3.org/2002/07/owl#oneOf> ?q .\n"
                 + "	}\n"
                 + "}";
@@ -69,23 +71,29 @@ public class Provider {
 
     public void FillData(List<Person> lsa) throws MarmottaException {
 
-        String qryName = "select distinct ?fun ?fn ?ln {\n"
+        String qryName = "select distinct ?fun {\n"
                 + "	graph <" + Graph + ">{\n"
-                + "    	{\n"
-                + "        	<URI> <http://xmlns.com/foaf/0.1/name> ?fun .\n"
-                + "      	}union{\n"
-                + "          	<URI> <http://xmlns.com/foaf/0.1/givenName> ?fn .\n"
-                + "          	<URI> <http://xmlns.com/foaf/0.1/familyName> ?ln .\n"
-                + "        }\n"
+                + "             values ?per1 { <URI> } . \n"
+                + "        	?per1 <http://xmlns.com/foaf/0.1/name> ?fun .\n"
                 + "    }\n"
                 + "}";
+
+        String qryName2 = "select distinct ?fn ?ln {\n"
+                + "	graph <" + Graph + ">{\n"
+                + "             values ?per1 { <URI> } . \n"
+                + "          	?per1 <http://xmlns.com/foaf/0.1/givenName> ?fn .\n"
+                + "          	?per1 <http://xmlns.com/foaf/0.1/familyName> ?ln .\n"
+                + "    }\n"
+                + "}";
+
         String qryCA = "prefix dct: <http://purl.org/dc/terms/>\n"
                 + "prefix foaf: <http://xmlns.com/foaf/0.1/>\n"
                 + "select distinct ?fun ?fn ?ln {\n"
                 + "     graph <" + Graph + ">{\n"
-                + "            <URI>      foaf:publications  ?publication .\n"
+                + "             values ?per { <URI> } . \n"
+                + "            ?per      foaf:publications  ?publication .\n"
                 + "      		?publication  dct:contributor | dct:creator   ?p .\n"
-                + "            filter (?p != <URI>) .\n"
+                + "            filter (?p != ?per) .\n"
                 + "          	optional { ?p foaf:name ?fun . }\n"
                 + "       		optional { ?p foaf:givenName ?fn . }\n"
                 + "          	optional { ?p foaf:familyName ?ln . }\n"
@@ -95,7 +103,8 @@ public class Provider {
                 + "prefix foaf: <http://xmlns.com/foaf/0.1/>\n"
                 + "select distinct ?p {\n"
                 + "     graph <" + Graph + ">{\n"
-                + "            <URI>      foaf:publications  ?publication .\n"
+                + "             values ?per { <URI> } . \n"
+                + "            ?per      foaf:publications  ?publication .\n"
                 + "      		?publication  dct:title   ?p .\n"
                 + "    }\n"
                 + "}";
@@ -103,7 +112,8 @@ public class Provider {
                 + "prefix  schema: <http://schema.org/>\n"
                 + "select distinct ?p {\n"
                 + "     graph <" + Graph + ">{\n"
-                + "            <URI> schema:memberOf ?o .\n"
+                + "             values ?per { <URI> } . \n"
+                + "            ?per schema:memberOf ?o .\n"
                 + "       		?o foaf:name ?p\n"
                 + "    }\n"
                 + "}";
@@ -111,7 +121,8 @@ public class Provider {
                 + "prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
                 + "select distinct ?p {\n"
                 + "     graph <" + Graph + ">{\n"
-                + "            <URI> foaf:publications  ?publication .\n"
+                + "             values ?per { <URI> } . \n"
+                + "            ?per foaf:publications  ?publication .\n"
                 + "       		?publication foaf:topic_interest ?po .\n"
                 + "       		?po rdfs:label ?p\n"
                 + "    }\n"
@@ -119,6 +130,7 @@ public class Provider {
 
         for (Person n : lsa) {
             String qryName_ = qryName.replaceAll("URI", n.URI);
+            String qryName2_ = qryName2.replaceAll("URI", n.URI);
             String qryCA_ = qryCA.replaceAll("URI", n.URI);
             String qryP_ = qryP.replaceAll("URI", n.URI);
             String qryA_ = qryA.replaceAll("URI", n.URI);
@@ -126,6 +138,8 @@ public class Provider {
 
             //get Names
             List<Map<String, Value>> rsName = sparql.query(QueryLanguage.SPARQL, qryName_);
+            List<Map<String, Value>> rsName2 = sparql.query(QueryLanguage.SPARQL, qryName2_);
+            rsName.addAll(rsName2);
             n.Name = new ArrayList<>();
             for (Map<String, Value> ar : rsName) {
                 if (ar.get("fun") != null) {

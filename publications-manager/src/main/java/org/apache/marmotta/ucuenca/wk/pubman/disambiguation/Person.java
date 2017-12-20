@@ -46,24 +46,24 @@ public class Person {
             Boolean checkTopics = checkTopics(p);
 
             if (checkCoauthors == null && checkPublications == null && checkTopics == null
-                    && checkAffiliations == true) {
+                    && checkAffiliations != null && checkAffiliations == true) {
                 return true;
             }
-            
-            int c=0;
-            if (checkAffiliations==true){
+
+            int c = 0;
+            if (checkAffiliations != null && checkAffiliations == true) {
                 c++;
             }
-            if (checkPublications==true){
+            if (checkPublications != null && checkPublications == true) {
                 c++;
             }
-            if (checkCoauthors==true){
+            if (checkCoauthors != null && checkCoauthors == true) {
                 c++;
             }
-            if (checkTopics==true){
+            if (checkTopics != null && checkTopics == true) {
                 c++;
             }
-            return c>=2;
+            return c >= 2;
 
         }
         return false;
@@ -76,6 +76,7 @@ public class Person {
         List<String> name1 = NameUtils.bestName(Name);
         List<String> name2 = NameUtils.bestName(p.Name);
         double sim = NameUtils.compareName(name1, name2);
+        System.out.println("COMPA"+name1 + "+" + name2 + "+" + sim);
         return sim >= thresholdName;
     }
 
@@ -91,7 +92,9 @@ public class Person {
         for (List<String> n1 : name1) {
             for (List<String> n2 : name2) {
                 if (!uname1.contains(n1) && !uname2.contains(n2)) {
+                    System.out.print("COMPA"+n1 + "+" + n2 + "+");
                     if (NameUtils.compareName(n1, n2) >= thresholdCAName) {
+                        System.out.println("ok");
                         co++;
                         uname1.add(n1);
                         uname2.add(n2);
@@ -114,7 +117,9 @@ public class Person {
         for (String n1 : name1) {
             for (String n2 : name2) {
                 if (!uname1.contains(n1) && !uname2.contains(n2)) {
+                    System.out.print("COMPA"+n1 + "+" + n2 + "+");
                     if (PublicationUtils.compareTitle(n1, n2) >= thresholdTitle) {
+                        System.out.println("ok");
                         co++;
                         uname1.add(n1);
                         uname2.add(n2);
@@ -137,7 +142,9 @@ public class Person {
         for (String n1 : name1) {
             for (String n2 : name2) {
                 if (!uname1.contains(n1) && !uname2.contains(n2)) {
+                    System.out.print("COMPA"+n1 + "+" + n2 + "+");
                     if (AffiliationUtils.compareTitle(n1, n2) >= thresholdAff) {
+                        System.out.println("ok");
                         co++;
                         uname1.add(n1);
                         uname2.add(n2);
@@ -185,14 +192,20 @@ public class Person {
         }
         if (Publications != null) {
             newPersonClon.Publications = new ArrayList<>(Publications);
+        } else {
+            newPersonClon.Publications = new ArrayList<>();
         }
         newPersonClon.Publications.addAll(new ArrayList<>(p.Publications));
         if (Affiliations != null) {
             newPersonClon.Affiliations = new ArrayList<>(Affiliations);
+        } else {
+            newPersonClon.Affiliations = new ArrayList<>();
         }
         newPersonClon.Affiliations.addAll(new ArrayList<>(p.Affiliations));
         if (Topics != null) {
             newPersonClon.Topics = new ArrayList<>(Topics);
+        } else {
+            newPersonClon.Topics = new ArrayList<>();
         }
         newPersonClon.Topics.addAll(new ArrayList<>(p.Topics));
         return newPersonClon;
