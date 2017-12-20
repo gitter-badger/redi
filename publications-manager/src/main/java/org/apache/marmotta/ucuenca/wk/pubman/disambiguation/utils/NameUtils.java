@@ -97,6 +97,24 @@ public class NameUtils {
                 }
             }
         }
+        
+        Set<Set<Integer>> ls_alone = new HashSet<>();
+        for (int i = 0; i < options.size(); i++) {
+            boolean alone = true;
+            for (Set<Integer> ung : ls) {
+                if (ung.contains(i)) {
+                    alone = false;
+                    break;
+                }
+            }
+            if (alone){
+                Set<Integer> hsalone = new HashSet<>();
+                hsalone.add(i);
+                ls_alone.add(hsalone);
+            }
+        }
+        ls.addAll(ls_alone);
+        
         List<List<String>> optsal =new ArrayList<>();
         for (Set<Integer> grp: ls){
             List<List<String>> opt =new ArrayList<>();
