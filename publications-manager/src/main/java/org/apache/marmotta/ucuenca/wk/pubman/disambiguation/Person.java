@@ -39,7 +39,7 @@ public class Person {
         }
 
         Boolean checkName = checkName(p);
-        if (checkName == true) {
+        if (checkName != null && checkName == true) {
             Boolean checkAffiliations = checkAffiliations(p);
             Boolean checkCoauthors = checkCoauthors(p);
             Boolean checkPublications = checkPublications(p);
@@ -76,7 +76,7 @@ public class Person {
         List<String> name1 = NameUtils.bestName(Name);
         List<String> name2 = NameUtils.bestName(p.Name);
         double sim = NameUtils.compareName(name1, name2);
-        System.out.println("COMPA"+name1 + "+" + name2 + "+" + sim);
+        System.out.println("COMPA" + name1 + "+" + name2 + "+" + sim);
         return sim >= thresholdName;
     }
 
@@ -92,7 +92,7 @@ public class Person {
         for (List<String> n1 : name1) {
             for (List<String> n2 : name2) {
                 if (!uname1.contains(n1) && !uname2.contains(n2)) {
-                    System.out.print("COMPA"+n1 + "+" + n2 + "+");
+                    System.out.print("COMPA" + n1 + "+" + n2 + "+");
                     if (NameUtils.compareName(n1, n2) >= thresholdCAName) {
                         System.out.println("ok");
                         co++;
@@ -117,7 +117,7 @@ public class Person {
         for (String n1 : name1) {
             for (String n2 : name2) {
                 if (!uname1.contains(n1) && !uname2.contains(n2)) {
-                    System.out.print("COMPA"+n1 + "+" + n2 + "+");
+                    System.out.print("COMPA" + n1 + "+" + n2 + "+");
                     if (PublicationUtils.compareTitle(n1, n2) >= thresholdTitle) {
                         System.out.println("ok");
                         co++;
@@ -142,7 +142,7 @@ public class Person {
         for (String n1 : name1) {
             for (String n2 : name2) {
                 if (!uname1.contains(n1) && !uname2.contains(n2)) {
-                    System.out.print("COMPA"+n1 + "+" + n2 + "+");
+                    System.out.print("COMPA" + n1 + "+" + n2 + "+");
                     if (AffiliationUtils.compareTitle(n1, n2) >= thresholdAff) {
                         System.out.println("ok");
                         co++;
