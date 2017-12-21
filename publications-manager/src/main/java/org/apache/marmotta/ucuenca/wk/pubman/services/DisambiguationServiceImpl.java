@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
@@ -79,13 +81,13 @@ public class DisambiguationServiceImpl implements DisambiguationService {
     }
 
     public void Init(List<Provider> list) throws MarmottaException, RepositoryException, MalformedQueryException, QueryEvaluationException, RDFHandlerException, InvalidArgumentException, UpdateExecutionException, InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
         Provider AuthorsProvider = list.get(0);
         List<Person> lsAuthors = AuthorsProvider.getAuthors();
         List<Integer> pool = new ArrayList<>();
-        //AuthorsProvider.FillData(lsAuthors);
         for (int i = 0; i < lsAuthors.size(); i++) {
             Person PersonAG = lsAuthors.get(i);
-            List<Map.Entry<Provider, List<Person>>> Candidates = new ArrayList<>();
+            final List<Map.Entry<Provider, List<Person>>> Candidates = new ArrayList<>();
             Candidates.add(new AbstractMap.SimpleEntry<Provider, List<Person>>(AuthorsProvider, Lists.newArrayList(PersonAG)));
             for (int j = 1; j < list.size(); j++) {
                 Provider aProvider = list.get(j);
@@ -95,31 +97,21 @@ public class DisambiguationServiceImpl implements DisambiguationService {
                     Candidates.add(new AbstractMap.SimpleEntry<>(aProvider, candidates));
                 }
             }
-            //Disambiguate(Candidates, 0, new Person());
-            pool(pool,i, Candidates);
-//pool
-        }
-    }
-
-    public void pool(final List<Integer> pool, final int i, final List<Map.Entry<Provider, List<Person>>> Candidates) throws MarmottaException, RepositoryException, MalformedQueryException, QueryEvaluationException, RDFHandlerException, InvalidArgumentException, UpdateExecutionException, InterruptedException {
-
-        while (pool.size() >= 5) {
-            Thread.sleep(1000);
-        }
-        pool.add(i);
-        Thread thread = new Thread() {
-            public void run() {
-                try {
-                    Disambiguate(Candidates, 0, new Person());
-                    pool.remove(i);
-                } catch (Exception ex) {
-
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        for (Map.Entry<Provider, List<Person>> aCl : Candidates) {
+                            aCl.getKey().FillData(aCl.getValue());
+                        }
+                        Disambiguate(Candidates, 0, new Person());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
-            }
-        };
-        
-        thread.start();
-
+            });
+        }
+        executorService.shutdown();
     }
 
     public void Disambiguate(List<Map.Entry<Provider, List<Person>>> Candidates, int level, Person P) throws MarmottaException, RepositoryException, MalformedQueryException, QueryEvaluationException, RDFHandlerException, InvalidArgumentException, UpdateExecutionException {
@@ -128,7 +120,6 @@ public class DisambiguationServiceImpl implements DisambiguationService {
             return;
         }
         List<Person> get = Candidates.get(level).getValue();
-        Candidates.get(level).getKey().FillData(get);
         for (Person p : get) {
             if (P.check(p)) {
                 Person enrich = P.enrich(p);
@@ -231,7 +222,7 @@ public class DisambiguationServiceImpl implements DisambiguationService {
 
     public void registerSameAs(String graph, String URIO, String URIP) throws InvalidArgumentException, MarmottaException, MalformedQueryException, UpdateExecutionException {
 
-        if (URIO != null && URIP != null) {
+        if (URIO != null && URIP != null && URIO.compareTo(URIP) != 0) {
             String buildInsertQuery = buildInsertQuery(graph, URIO, "http://www.w3.org/2002/07/owl#sameAs", URIP);
             sparqlService.update(QueryLanguage.SPARQL, buildInsertQuery);
         }
