@@ -84,7 +84,6 @@ public class DisambiguationServiceImpl implements DisambiguationService {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         Provider AuthorsProvider = list.get(0);
         List<Person> lsAuthors = AuthorsProvider.getAuthors();
-        List<Integer> pool = new ArrayList<>();
         for (int i = 0; i < lsAuthors.size(); i++) {
             Person PersonAG = lsAuthors.get(i);
             final List<Map.Entry<Provider, List<Person>>> Candidates = new ArrayList<>();
@@ -181,7 +180,7 @@ public class DisambiguationServiceImpl implements DisambiguationService {
             gp += " <" + pro.Graph + "> ";
         }
         String CG = "http://redi.cedia.edu.ec/publication/sameAs";
-        final double th = 0.9;
+        final double th = 0.95;
         String qry = "select distinct ?p ?t {\n"
                 + "  	graph <" + CGP + ">{\n"
                 + "		<" + p + "> <http://www.w3.org/2002/07/owl#sameAs> ?c .\n"

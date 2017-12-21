@@ -19,7 +19,7 @@ public class Person {
 
     private final double thresholdName = 0.9;
     private final double thresholdCAName = 0.9;
-    private final double thresholdTitle = 0.9;
+    private final double thresholdTitle = 0.95;
     private final double thresholdAff = 0.99;
     private final int thresholdCoauthors = 2;
     private final int thresholdPublications = 1;
