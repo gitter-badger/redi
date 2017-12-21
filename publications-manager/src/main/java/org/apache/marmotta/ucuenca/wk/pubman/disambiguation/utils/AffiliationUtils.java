@@ -26,7 +26,7 @@ public class AffiliationUtils {
     }
 
     public static List<String> uniqueTitle(List<String> options) {
-        final double aggThreshold = 0.9;
+        final double aggThreshold = 0.99;
         Set<Set<Integer>> ls = new HashSet<>();
         for (int i = 0; i < options.size(); i++) {
             for (int j = i + 1; j < options.size(); j++) {

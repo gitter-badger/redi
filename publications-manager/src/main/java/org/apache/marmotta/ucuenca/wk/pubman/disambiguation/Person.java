@@ -20,7 +20,7 @@ public class Person {
     private final double thresholdName = 0.9;
     private final double thresholdCAName = 0.9;
     private final double thresholdTitle = 0.9;
-    private final double thresholdAff = 0.9;
+    private final double thresholdAff = 0.99;
     private final int thresholdCoauthors = 2;
     private final int thresholdPublications = 1;
     private final int thresholdAffiliation = 1;
@@ -92,9 +92,9 @@ public class Person {
         for (List<String> n1 : name1) {
             for (List<String> n2 : name2) {
                 if (!uname1.contains(n1) && !uname2.contains(n2)) {
-                    System.out.print("COMPA" + n1 + "+" + n2 + "+");
-                    if (NameUtils.compareName(n1, n2) >= thresholdCAName) {
-                        System.out.println("ok");
+                    double sim =NameUtils.compareName(n1, n2);
+                    System.out.println("COMPA" + n1 + "+" + n2 + "+"+sim);
+                    if (sim >= thresholdCAName) {
                         co++;
                         uname1.add(n1);
                         uname2.add(n2);
@@ -117,9 +117,9 @@ public class Person {
         for (String n1 : name1) {
             for (String n2 : name2) {
                 if (!uname1.contains(n1) && !uname2.contains(n2)) {
-                    System.out.print("COMPA" + n1 + "+" + n2 + "+");
-                    if (PublicationUtils.compareTitle(n1, n2) >= thresholdTitle) {
-                        System.out.println("ok");
+                    double sim= PublicationUtils.compareTitle(n1, n2);
+                    System.out.println("COMPA" + n1 + "+" + n2 + "+"+sim);
+                    if ( sim >= thresholdTitle) {
                         co++;
                         uname1.add(n1);
                         uname2.add(n2);
@@ -142,9 +142,9 @@ public class Person {
         for (String n1 : name1) {
             for (String n2 : name2) {
                 if (!uname1.contains(n1) && !uname2.contains(n2)) {
-                    System.out.print("COMPA" + n1 + "+" + n2 + "+");
-                    if (AffiliationUtils.compareTitle(n1, n2) >= thresholdAff) {
-                        System.out.println("ok");
+                    double sim=AffiliationUtils.compareTitle(n1, n2);
+                    System.out.println("COMPA" + n1 + "+" + n2 + "+"+sim);
+                    if ( sim>= thresholdAff) {
                         co++;
                         uname1.add(n1);
                         uname2.add(n2);

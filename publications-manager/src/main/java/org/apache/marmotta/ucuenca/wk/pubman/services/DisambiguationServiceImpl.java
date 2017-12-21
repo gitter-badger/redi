@@ -6,6 +6,7 @@
 package org.apache.marmotta.ucuenca.wk.pubman.services;
 
 import com.google.common.collect.Lists;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -77,37 +78,62 @@ public class DisambiguationServiceImpl implements DisambiguationService {
         }
     }
 
-    public void Init(List<Provider> list) throws MarmottaException, RepositoryException, MalformedQueryException, QueryEvaluationException, RDFHandlerException, InvalidArgumentException, UpdateExecutionException {
+    public void Init(List<Provider> list) throws MarmottaException, RepositoryException, MalformedQueryException, QueryEvaluationException, RDFHandlerException, InvalidArgumentException, UpdateExecutionException, InterruptedException {
         Provider AuthorsProvider = list.get(0);
         List<Person> lsAuthors = AuthorsProvider.getAuthors();
-        AuthorsProvider.FillData(lsAuthors);
+        List<Integer> pool = new ArrayList<>();
+        //AuthorsProvider.FillData(lsAuthors);
         for (int i = 0; i < lsAuthors.size(); i++) {
             Person PersonAG = lsAuthors.get(i);
-            List<List<Person>> Candidates = new ArrayList<>();
-            Candidates.add(Lists.newArrayList(PersonAG));
+            List<Map.Entry<Provider, List<Person>>> Candidates = new ArrayList<>();
+            Candidates.add(new AbstractMap.SimpleEntry<Provider, List<Person>>(AuthorsProvider, Lists.newArrayList(PersonAG)));
             for (int j = 1; j < list.size(); j++) {
                 Provider aProvider = list.get(j);
                 List<Person> candidates = aProvider.getCandidates(PersonAG.URI);
-                aProvider.FillData(candidates);
+                //aProvider.FillData(candidates);
                 if (!candidates.isEmpty()) {
-                    Candidates.add(candidates);
+                    Candidates.add(new AbstractMap.SimpleEntry<>(aProvider, candidates));
                 }
             }
-            Disambiguate(Candidates, 0, new Person());
+            //Disambiguate(Candidates, 0, new Person());
+            pool(pool,i, Candidates);
+//pool
         }
     }
 
-    public void Disambiguate(List<List<Person>> Candidates, int level, Person P) throws MarmottaException, RepositoryException, MalformedQueryException, QueryEvaluationException, RDFHandlerException, InvalidArgumentException, UpdateExecutionException {
+    public void pool(final List<Integer> pool, final int i, final List<Map.Entry<Provider, List<Person>>> Candidates) throws MarmottaException, RepositoryException, MalformedQueryException, QueryEvaluationException, RDFHandlerException, InvalidArgumentException, UpdateExecutionException, InterruptedException {
+
+        while (pool.size() >= 5) {
+            Thread.sleep(1000);
+        }
+        pool.add(i);
+        Thread thread = new Thread() {
+            public void run() {
+                try {
+                    Disambiguate(Candidates, 0, new Person());
+                    pool.remove(i);
+                } catch (Exception ex) {
+
+                }
+            }
+        };
+        
+        thread.start();
+
+    }
+
+    public void Disambiguate(List<Map.Entry<Provider, List<Person>>> Candidates, int level, Person P) throws MarmottaException, RepositoryException, MalformedQueryException, QueryEvaluationException, RDFHandlerException, InvalidArgumentException, UpdateExecutionException {
         String CG = "http://redi.cedia.edu.ec/person/sameAs";
         if (level >= Candidates.size()) {
             return;
         }
-        List<Person> get = Candidates.get(level);
+        List<Person> get = Candidates.get(level).getValue();
+        Candidates.get(level).getKey().FillData(get);
         for (Person p : get) {
             if (P.check(p)) {
                 Person enrich = P.enrich(p);
-                Disambiguate(Candidates, level + 1, enrich);
                 registerSameAs(CG, P.URI, p.URI);
+                Disambiguate(Candidates, level + 1, enrich);
             } else {
                 Disambiguate(Candidates, level + 1, P);
             }

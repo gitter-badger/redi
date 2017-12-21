@@ -88,7 +88,7 @@ public class ModifiedJaccardMod {
     }
 
     public String specialCharactersClean(String n) {
-        return n.replaceAll("\\\\.|,|;|:|-|\\n|\\\\\\\\|\\\\||\\\"|\\'|_|/", " ");
+        return n.replaceAll("\\.|,|;|:|-|\n|\\\\|\\||\"|\'|_|/", " ");
     }
 
     public List<String> tokenizer(String n) {
