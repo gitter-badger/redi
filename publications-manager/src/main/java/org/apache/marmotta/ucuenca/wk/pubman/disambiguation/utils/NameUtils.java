@@ -84,7 +84,7 @@ public class NameUtils {
                     lss.add(j);
                     Set<Integer> lsn = null;
                     for (Set<Integer> p : ls) {
-                        if (p.containsAll(lss)) {
+                        if (p.contains(i) || p.contains(j)) {
                             lsn = p;
                             break;
                         }
