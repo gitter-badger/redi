@@ -17,13 +17,13 @@ import org.apache.marmotta.ucuenca.wk.pubman.disambiguation.utils.PublicationUti
  */
 public class Person {
 
-    private final double thresholdName = 0.9;
-    private final double thresholdCAName = 0.9;
-    private final double thresholdTitle = 0.95;
-    private final double thresholdAff = 0.99;
-    private final int thresholdCoauthors = 2;
-    private final int thresholdPublications = 1;
-    private final int thresholdAffiliation = 1;
+    public static final double thresholdName = 0.9;
+    public static final double thresholdCAName = 0.9;
+    public static final double thresholdTitle = 0.95;
+    public static final double thresholdAff = 0.99;
+    public static final int thresholdCoauthors = 2;
+    public static final int thresholdPublications = 1;
+    public static final int thresholdAffiliation = 1;
 
     public Provider Origin;
     public String URI;

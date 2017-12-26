@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.marmotta.ucuenca.wk.commons.util.ModifiedJaccardMod;
+import org.apache.marmotta.ucuenca.wk.pubman.disambiguation.Person;
 
 /**
  *
@@ -25,7 +26,7 @@ public class PublicationUtils {
     }
 
     public static List<String> uniqueTitle(List<String> options) {
-        final double aggThreshold = 0.9;
+        final double aggThreshold = Person.thresholdTitle;
         Set<Set<Integer>> ls = new HashSet<>();
         for (int i = 0; i < options.size(); i++) {
             for (int j = i + 1; j < options.size(); j++) {

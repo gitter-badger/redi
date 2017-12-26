@@ -13,5 +13,7 @@ public interface DisambiguationService {
     
     
     public void Proccess();
+    
+    public void Merge();
 
 }
